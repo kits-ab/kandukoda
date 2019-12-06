@@ -1,0 +1,209 @@
+
+swagger: '2.0'
+info:
+  title: Thing API
+  description: An api to manage your things
+  version: "1.0.0"
+host: api.things.kits.se
+schemes:
+  - https
+basePath: /api
+produces:
+  - application/json
+paths:
+  /addNewThing:
+    post:
+      tags:
+        - Thing
+      summary: Adds a new thing
+      description: create a new thing
+      parameters:
+        - name: postdata
+          in: body
+          description: new Thing
+          required: true
+          schema:
+            properties:
+              thingName:
+                type: string
+                description: the thing name
+      responses:
+        200:
+          description: Thing created
+          schema:
+            properties:
+              id:
+                type: string
+                description: Unique identifier of created thing
+  /thing:
+    get:
+      tags:
+        - Thing
+      summary: Read all things
+      description: |
+        The thing endpoint returns information about the things.
+      responses:
+        200:
+          description: An array of Things
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Thing'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /user:
+    get:
+      tags:
+        - User
+        - Thing
+      summary: Get all users
+      description: |
+        The user endpoint returns information about the users.
+      responses:
+        200:
+          description: An array of Users
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/User'
+  /createNewUser:
+    post:
+      tags:
+        - User
+      summary: Create new user
+      description: |
+        Creates a new user
+      parameters:
+        - name: postdata
+          in: body
+          description: new User
+          required: true
+          schema:
+            properties:
+              first_name:
+                type: string
+                description: The users first name
+              last_name:
+                type: string
+                description: The users last name
+      responses:
+        200:
+          description: User created
+          schema:
+            properties:
+              id:
+                type: string
+                description: Unique identifier of created thing
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /me:
+    get:
+      summary: User Information
+      description: The User Information endpoint returns information about the specified user.
+      tags:
+        - User
+      responses:
+        200:
+          description: Profile information for a user
+          schema:
+            $ref: '#/definitions/User'
+  /thing/user/makeConnect:
+    put:
+      summary: Connect a user with a thing
+      description: Connect a thing with a user
+      tags:
+        - Thing
+        - User
+      parameters:
+        - name: postdata
+          in: body
+          description: Connect a thing with a user
+          required: true
+          schema:
+            properties:
+              user_id:
+                type: string
+                description: The users identifier
+              thing_id:
+                type: string
+                description: The things identifier
+      responses:
+        202:
+          description: Connection was accepted
+        410:
+          description: The thing was gone
+          schema:
+            properties:
+              code:
+                type: integer
+                example: 409
+              message:
+                type: string
+                example: User does not exist
+              fields:
+                type: string
+                example: user_id
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /thing/user/makeConnect/{connectionId}:
+    delete:
+      tags:
+        - Thing
+      summary: remove a connection
+      description: remove a connection
+      parameters:
+        - name: connectionId
+          in: path
+          required: true
+          type: integer
+      responses:
+        204:
+          description: No content, connection was removed
+
+
+definitions:
+  User:
+    type: object
+    properties:
+      first_name:
+        type: string
+        description: First name of the user.
+      last_name:
+        type: string
+        description: Last name of the user.
+      email:
+        type: string
+        description: Email address of the user, This value must be unique for each user
+      things:
+        type: array
+        description: A users connected things
+        items:
+          $ref: '#/definitions/Thing'
+  Thing:
+    type: object
+    properties:
+      uuid:
+        type: string
+        description: Unique identifier for the thing
+      name:
+        type: string
+        description: The presentation name of the thing
+  Error:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+        example: 400
+      message:
+        type: string
+        example: bad parameter
+      fields:
+        type: string
+        example: parameter A
